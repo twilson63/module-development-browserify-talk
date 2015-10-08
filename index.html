@@ -1,0 +1,949 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Modular Client Development using NodeJS Browserify</title>
+  <style type="text/css">
+    body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #222;
+  background-color: #f7f7f7;
+  font-size: 100%;
+}
+
+.slide {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
+}
+
+.slide-content {
+  width: 800px;
+  height: 600px;
+  overflow: hidden;
+  margin: 80px auto 0 auto;
+  padding: 30px;
+
+  font-weight: 200;
+  font-size: 200%;
+  line-height: 1.375;
+}
+
+.controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
+
+.arrow {
+  width: 0; height: 0;
+  border: 30px solid #333;
+  float: left;
+  margin-right: 30px;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.prev {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+
+  border-left-width: 0;
+  border-right-width: 50px;
+}
+
+.next {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+
+  border-left-width: 50px;
+  border-right-width: 0;
+}
+
+.prev:hover {
+  border-right-color: #888;
+  cursor: pointer;
+}
+
+.next:hover {
+  border-left-color: #888;
+  cursor: pointer;
+}
+
+h1 {
+  font-size: 300%;
+  line-height: 1.2;
+  text-align: center;
+  margin: 170px 0 0;
+}
+
+h2 {
+  font-size: 100%;
+  line-height: 1.2;
+  margin: 5px 0;
+  text-align: center;
+  font-weight: 200;
+}
+
+h3 {
+  font-size: 140%;
+  line-height: 1.2;
+  border-bottom: 1px solid #aaa;
+  margin: 0;
+  padding-bottom: 15px;
+}
+
+ul {
+  padding: 20px 0 0 60px;
+  font-weight: 200;
+  line-height: 1.375;
+}
+
+.author h1 {
+  font-size: 170%;
+  font-weight: 200;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.author h3 {
+  font-weight: 100;
+  text-align: center;
+  font-size: 95%;
+  border: none;
+}
+
+a {
+  text-decoration: none;
+  color: #44a4dd;
+}
+
+a:hover {
+  color: #66b5ff;
+}
+
+pre {
+  font-size: 60%;
+  line-height: 1.3;
+}
+
+.progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 3px;
+  background-color: #b4b4b4;
+
+  -webkit-transition: width 0.05s ease-out;
+  -moz-transition: width 0.05s ease-out;
+  -o-transition: width 0.05s ease-out;
+  transition: width 0.05s ease-out;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 850px) {
+
+  body {
+    font-size: 70%;
+  }
+
+  .slide-content {
+    width: auto;
+  }
+
+  img {
+    width: 100%;
+  }
+
+  h1 {
+    margin-top: 120px;
+  }
+
+  .prev, .prev:hover {
+    border-right-color: rgba(135, 135, 135, 0.5);
+  }
+
+  .next, .next:hover {
+    border-left-color: rgba(135, 135, 135, 0.5);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 50%;
+    overflow: hidden;
+  }
+
+  .slide-content {
+    padding: 10px;
+    margin-top: 10px;
+    height: 340px;
+  }
+
+  h1 {
+    margin-top: 50px;
+  }
+
+  ul {
+    padding-left: 25px;
+  }
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+  }
+
+  @page {
+    size: letter;
+  }
+
+  .hidden {
+    display: inline;
+  }
+
+  html {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  body {
+    margin: 0 auto !important;
+    border: 0;
+    padding: 0;
+    float: none !important;
+    overflow: visible;
+    background: none !important;
+    font-size: 52%;
+  }
+
+  .progress, .controls {
+    display: none;
+  }
+
+  .slide {
+    position: static;
+  }
+
+  .slide-content {
+    border: 1px solid #222;
+    margin-top: 0;
+    margin-bottom: 40px;
+    height: 3.5in;
+    overflow: visible;
+  }
+
+  .slide:nth-child(even) {
+    /* 2 slides per page */
+    page-break-before: always;
+  }
+}
+
+/*
+github.com style (c) Vasily Polovnyov <vast@whiteants.net>
+*/
+
+code, pre {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  overflow: auto;
+  padding: 6px 10px;
+}
+
+code {
+  padding: 0 5px;
+}
+
+pre>code {
+  margin: 0; padding: 0;
+  border: none;
+  background: transparent;
+}
+
+pre .comment,
+pre .template_comment,
+pre .diff .header,
+pre .javadoc {
+  color: #998;
+  font-style: italic
+}
+
+pre .keyword,
+pre .css .rule .keyword,
+pre .winutils,
+pre .javascript .title,
+pre .nginx .title,
+pre .subst,
+pre .request,
+pre .status {
+  color: #333;
+  font-weight: bold
+}
+
+pre .number,
+pre .hexcolor,
+pre .ruby .constant {
+  color: #099;
+}
+
+pre .string,
+pre .tag .value,
+pre .phpdoc,
+pre .tex .formula {
+  color: #d14
+}
+
+pre .title,
+pre .id {
+  color: #900;
+  font-weight: bold
+}
+
+pre .javascript .title,
+pre .lisp .title,
+pre .clojure .title,
+pre .subst {
+  font-weight: normal
+}
+
+pre .class .title,
+pre .haskell .type,
+pre .vhdl .literal,
+pre .tex .command {
+  color: #458;
+  font-weight: bold
+}
+
+pre .tag,
+pre .tag .title,
+pre .rules .property,
+pre .django .tag .keyword {
+  color: #000080;
+  font-weight: normal
+}
+
+pre .attribute,
+pre .variable,
+pre .lisp .body {
+  color: #008080
+}
+
+pre .regexp {
+  color: #009926
+}
+
+pre .class {
+  color: #458;
+  font-weight: bold
+}
+
+pre .symbol,
+pre .ruby .symbol .string,
+pre .lisp .keyword,
+pre .tex .special,
+pre .prompt {
+  color: #990073
+}
+
+pre .built_in,
+pre .lisp .title,
+pre .clojure .built_in {
+  color: #0086b3
+}
+
+pre .preprocessor,
+pre .pi,
+pre .doctype,
+pre .shebang,
+pre .cdata {
+  color: #999;
+  font-weight: bold
+}
+
+pre .deletion {
+  background: #fdd
+}
+
+pre .addition {
+  background: #dfd
+}
+
+pre .diff .change {
+  background: #0086b3
+}
+
+pre .chunk {
+  color: #aaa
+}
+
+
+  </style>
+</head>
+<body>
+    <div class="progress">
+    <div class="progress-bar"></div>
+  </div>
+
+  <div class="slide" id="slide-1">
+    <section class="slide-content"><h1 id="modular-client-development">Modular Client Development</h1>
+<h2 id="using-nodejs-browserify">using NodeJS - Browserify</h2>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-2">
+    <section class="slide-content"><h2 id="what-is-a-modular-application-">What is a modular application?</h2>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-3">
+    <section class="slide-content"><p>The concept of modular applications, is breaking up your code in small re-usable pieces, separting the custom from 
+the generic to maximize the ability to reuse focusing on
+the <code>single responsibility principal</code> - <a href="https://en.wikipedia.org/wiki/Single_responsibility_principle"><a href="https://en.wikipedia.org/wiki/Single_responsibility_principle">https://en.wikipedia.org/wiki/Single_responsibility_principle</a></a></p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-4">
+    <section class="slide-content"><h1 id="what-is-browserify-">What is Browserify?</h1>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-5">
+    <section class="slide-content"><p>Browserify is a node application that uses the node-flavored module system and some static analysis to bundle up your javascript modules into a single file that can be served to the client.</p>
+<p>But before we jump in to Browserify, it is important to understand how modules work in nodejs.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-6">
+    <section class="slide-content"><h2 id="what-is-nodejs-">What is NodeJS?</h2>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-7">
+    <section class="slide-content"><ul>
+<li>Server-Side</li>
+<li>NonBlocking IO</li>
+<li>JavaScript on the Server</li>
+<li>Open/Diverse Community</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-8">
+    <section class="slide-content"><h1 id="what-is-node-flavored-commonjs-">What is <code>node-flavored</code> commonjs?</h1>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-9">
+    <section class="slide-content"><h3 id="require">require</h3>
+<p>In node, there is a <code>require()</code> function for loading code in other files.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-10">
+    <section class="slide-content"><h3 id="lets-install-a-module-with-npm">Lets install a module with npm</h3>
+<pre><code>npm install uniq</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-11">
+    <section class="slide-content"><h3 id="then-lets-create-a-file-called-num-js-and-we-can-require-uniq-">Then lets create a file called <code>num.js</code>, and we can <code>require(&#39;uniq&#39;)</code></h3>
+<pre><code>var uniq = require(&#39;uniq&#39;)
+var nums = [ 5, 2, 1, 3, 2, 5, 4, 2, 0, 1 ]
+console.log(uniq(nums))</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-12">
+    <section class="slide-content"><h3 id="output">Output</h3>
+<pre><code>node nums.js
+[ 0, 1, 2, 3, 4, 5 ]</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-13">
+    <section class="slide-content"><h3 id="you-can-also-require-relative-files-to-your-file-">You can also require relative files to your file.</h3>
+<pre><code>var foo = require(&#39;./foo.js&#39;)
+console.log(foo(4))</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-14">
+    <section class="slide-content"><h3 id="if-foo-was-in-the-parent-directory-you-could-use-foo-js-instead">if <code>foo</code> was in the parent directory, you could use <code>..foo.js</code> instead</h3>
+<pre><code>var foo = require(&#39;../foo.js&#39;);
+console.log(foo(4));</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-15">
+    <section class="slide-content"><p>How <code>require()</code> works is unlike many other module systems where imports are akin to statements that expose themselves as globals or file-local lexicals with names declared in the module itself outside of your control. </p>
+<p>Under the node style of code import with <code>require()</code>, someone reading your program can easily tell where each piece of functionality came from. This approach scales much better as the number of modules in an application grows.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-16">
+    <section class="slide-content"><h1 id="exports">exports</h1>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-17">
+    <section class="slide-content"><p>To export a single thing from a file so that other files may import it, assign over the value at module.exports:</p>
+<pre><code>module.exports = function (n) {
+    return n * 111
+};</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-18">
+    <section class="slide-content"><p>Now when some module main.js loads your foo.js, the return value of require(&#39;./foo.js&#39;) will be the exported function:</p>
+<pre><code>var foo = require(&#39;./foo.js&#39;);
+console.log(foo(5));</code></pre>
+<p>This program will print:</p>
+<pre><code>555</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-19">
+    <section class="slide-content"><p>You can export any kind of value with module.exports, not just functions.</p>
+<p>For example, this is perfectly fine:</p>
+<pre><code>module.exports = 555</code></pre>
+<p>and so is this:</p>
+<pre><code>var numbers = [];
+for (var i = 0; i &lt; 100; i++) numbers.push(i);
+
+module.exports = numbers;</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-20">
+    <section class="slide-content"><p>There is another form of doing exports specifically for exporting items onto an object. Here, exports is used instead of module.exports:</p>
+<pre><code>exports.beep = function (n) { return n * 1000 }
+exports.boop = 555</code></pre>
+<p>This program is the same as:</p>
+<pre><code>module.exports.beep = function (n) { return n * 1000 }
+module.exports.boop = 555</code></pre>
+<p>because module.exports is the same as exports and is initially set to an empty object.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-21">
+    <section class="slide-content"><p>Note however that you can&#39;t do:</p>
+<pre><code>// this doesn&#39;t work
+exports = function (n) { return n * 1000 }</code></pre>
+<p>because the export value lives on the module object, and so assigning a new value for exports instead of module.exports masks the original reference.</p>
+<p>Instead if you are going to export a single item, always do:</p>
+<pre><code>// instead
+module.exports = function (n) { return n * 1000 }</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-22">
+    <section class="slide-content"><p>If you&#39;re still confused, try to understand how modules work in the background:</p>
+<pre><code>var module = {
+  exports: {}
+};
+
+// If you require a module, it&#39;s basically wrapped in a function
+(function(module, exports) {
+  exports = function (n) { return n * 1000 };
+}(module, module.exports))
+
+console.log(module.exports); // it&#39;s still an empty object :(</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-23">
+    <section class="slide-content"><p>Most of the time, you will want to export a single function or constructor with module.exports because it&#39;s usually best for a module to do one thing.</p>
+<p>The exports feature was originally the primary way of exporting functionality and module.exports was an afterthought, but module.exports proved to be much more useful in practice at being more direct, clear, and avoiding duplication.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-24">
+    <section class="slide-content"><p>In the early days, this style used to be much more common:</p>
+<p>foo.js:</p>
+<pre><code>exports.foo = function (n) { return n * 111 }</code></pre>
+<p>main.js:</p>
+<pre><code>var foo = require(&#39;./foo.js&#39;);
+console.log(foo.foo(5));</code></pre>
+<p>but note that the foo.foo is a bit superfluous.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-25">
+    <section class="slide-content"><p>Using module.exports it becomes more clear:</p>
+<p>foo.js:</p>
+<pre><code>module.exports = function (n) { return n * 111 }</code></pre>
+<p>main.js:</p>
+<pre><code>var foo = require(&#39;./foo.js&#39;);
+console.log(foo(5));</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-26">
+    <section class="slide-content"><h1 id="bundling-for-the-browser">Bundling for the browser</h1>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-27">
+    <section class="slide-content"><p>To run a module in node, you&#39;ve got to start from somewhere.</p>
+<p>In node you pass a file to the node command to run a file:</p>
+<pre><code>node robot.js
+beep boop</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-28">
+    <section class="slide-content"><p>In browserify, you do this same thing, but instead of running the file, you generate a stream of concatenated javascript files on stdout that you can write to a file with the &gt; operator:</p>
+<pre><code>browserify robot.js &gt; bundle.js</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-29">
+    <section class="slide-content"><p>Now <code>bundle.js</code> contains all the javascript that robot.js needs to work. Just plop it into a single script tag in some html:</p>
+<pre><code>&lt;html&gt;
+  &lt;body&gt;
+    &lt;script src=&quot;bundle.js&quot;&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>Bonus: if you put your script tag right before the </body>, you can use all of the dom elements on the page without waiting for a dom onready event.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-30">
+    <section class="slide-content"><h1 id="how-browserify-works">How browserify works</h1>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-31">
+    <section class="slide-content"><p>Browserify starts at the entry point files that you give it and searches for any require() calls it finds using static analysis of the source code&#39;s abstract syntax tree.</p>
+<p>For every require() call with a string in it, browserify resolves those module strings to file paths and then searches those file paths for require() calls recursively until the entire dependency graph is visited.</p>
+<p>Each file is concatenated into a single javascript file with a minimal require() definition that maps the statically-resolved names to internal IDs.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-32">
+    <section class="slide-content"><p>This means that the bundle you generate is completely self-contained and has everything your application needs to work with a pretty negligible overhead.</p>
+<p>For more details about how browserify works, check out the compiler pipeline section of this document.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-33">
+    <section class="slide-content"><h1 id="how-node_modules-work">how node_modules work</h1>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-34">
+    <section class="slide-content"><p>node has a clever algorithm for resolving modules that is unique among rival platforms.</p>
+<p>Instead of resolving packages from an array of system search paths like how $PATH works on the command line, node&#39;s mechanism is local by default.</p>
+<p>If you <code>require(&#39;./foo.js&#39;)</code> from <code>/beep/boop/bar.js</code>, node will look for <code>./foo.js</code> in <code>/beep/boop/foo.js</code>. Paths that start with a <code>./</code> or <code>../</code> are always local to the file that calls <code>require()</code>.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-35">
+    <section class="slide-content"><p>If however you require a non-relative name such as require(&#39;xyz&#39;) from /beep/boop/foo.js, node searches these paths in order, stopping at the first match and raising an error if nothing is found:</p>
+<pre><code>/beep/boop/node_modules/xyz
+/beep/node_modules/xyz
+/node_modules/xyz</code></pre>
+<p>For each xyz directory that exists, node will first look for a xyz/package.json to see if a &quot;main&quot; field exists. The &quot;main&quot; field defines which file should take charge if you require() the directory path.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-36">
+    <section class="slide-content"><p>For example, if <code>/beep/node_modules/xyz</code> is the first match and <code>/beep/node_modules/xyz/package.json</code> has:</p>
+<pre><code>{
+  &quot;name&quot;: &quot;xyz&quot;,
+  &quot;version&quot;: &quot;1.2.3&quot;,
+  &quot;main&quot;: &quot;lib/abc.js&quot;
+}</code></pre>
+<p>then the exports from <code>/beep/node_modules/xyz/lib/abc.js</code> will be returned by <code>require(&#39;xyz&#39;)</code>.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-37">
+    <section class="slide-content"><p>If there is no <code>package.json</code> or no &quot;main&quot; field, <code>index.js</code> is assumed:</p>
+<pre><code>/beep/node_modules/xyz/index.js</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-38">
+    <section class="slide-content"><p>If you need to, you can reach into a package to pick out a particular file. For example, to load the <code>lib/clone.js</code> file from the dat package, just do:</p>
+<pre><code>var clone = require(&#39;dat/lib/clone.js&#39;)</code></pre>
+<p>The recursive <code>node_modules</code> resolution will find the first dat package up the directory hierarchy, then the lib/clone.js file will be resolved from there. This <code>require(&#39;dat/lib/clone.js&#39;)</code> approach will work from any location where you can <code>require(&#39;dat&#39;)</code>.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-39">
+    <section class="slide-content"><p>Each library gets its own local node_modules/ directory where its dependencies are stored and each dependency&#39;s dependencies has its own node_modules/ directory, recursively all the way down.</p>
+<p>This means that packages can successfully use different versions of libraries in the same application, which greatly decreases the coordination overhead necessary to iterate on APIs. This feature is very important for an ecosystem like npm where there is no central authority to manage how packages are published and organized. Everyone may simply publish as they see fit and not worry about how their dependency version choices might impact other dependencies included in the same application.</p>
+<p>You can leverage how node_modules/ works to organize your own local application modules too. See the avoiding <code>../../../../../../..</code> section for more.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-40">
+    <section class="slide-content"><h1 id="why-concatenate">why concatenate</h1>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-41">
+    <section class="slide-content"><p>Browserify is a build step that runs on the server. It generates a single bundle file that has everything in it.</p>
+<p>Here are some other ways of implementing module systems for the browser and what their strengths and weaknesses are:</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-42">
+    <section class="slide-content"><h3 id="window-globals">window globals</h3>
+<p>Instead of a module system, each file defines properties on the window global object or develops an internal namespacing scheme.</p>
+<p>This approach does not scale well without extreme diligence since each new file needs an additional <code>&lt;script&gt;</code> tag in all of the html pages where the application will be rendered. Further, the files tend to be very order-sensitive because some files need to be included before other files the expect globals to already be present in the environment.</p>
+<p>It can be difficult to refactor or maintain applications built this way. On the plus side, all browsers natively support this approach and no server-side tooling is required.</p>
+<p>This approach tends to be very slow since each <code>&lt;script&gt;</code>tag initiates a new round-trip http request.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-43">
+    <section class="slide-content"><h3 id="concatenate">concatenate</h3>
+<p>Instead of window globals, all the scripts are concatenated beforehand on the server. The code is still order-sensitive and difficult to maintain, but loads much faster because only a single http request for a single <code>&lt;script&gt;</code> tag needs to execute.</p>
+<p>Without source maps, exceptions thrown will have offsets that can&#39;t be easily mapped back to their original files.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-44">
+    <section class="slide-content"><h3 id="amd">AMD</h3>
+<p>Instead of using <code>&lt;script&gt;</code> tags, every file is wrapped with a define() function and callback. This is AMD.</p>
+<p>The first argument is an array of modules to load that maps to each argument supplied to the callback. Once all the modules are loaded, the callback fires.</p>
+<pre><code>define([&#39;jquery&#39;] , function ($) {
+    return function () {};
+});</code></pre>
+<p>You can give your module a name in the first argument so that other modules can include it.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-45">
+    <section class="slide-content"><p>There is a commonjs sugar syntax that stringifies each callback and scans it for <code>require()</code> calls with a regexp.</p>
+<p>Code written this way is much less order-sensitive than concatenation or globals since the order is resolved by explicit dependency information.</p>
+<p>For performance reasons, most of the time AMD is bundled server-side into a single file and during development it is more common to actually use the asynchronous feature of AMD.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-46">
+    <section class="slide-content"><h3 id="bundling-commonjs-server-side">bundling commonjs server-side</h3>
+<p>If you&#39;re going to have a build step for performance and a sugar syntax for convenience, why not scrap the whole AMD business altogether and bundle commonjs? With tooling you can resolve modules to address order-sensitivity and your development and production environments will be much more similar and less fragile. The CJS syntax is nicer and the ecosystem is exploding because of node and npm.</p>
+<p>You can seamlessly share code between node and the browser. You just need a build step and some tooling for source maps and auto-rebuilding.</p>
+<p>Plus, we can use node&#39;s module lookup algorithms to save us from version mismatch insanity so that we can have multiple conflicting versions of different required packages in the same application and everything will still work. To save bytes down the wire you can dedupe, which is covered elsewhere in this document.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-47">
+    <section class="slide-content"><h3 id="development">Development</h3>
+<p>Concatenation has some downsides, but these can be very adequately addressed with development tooling.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-48">
+    <section class="slide-content"><h3 id="source-maps">source maps</h3>
+<p>Browserify supports a --debug/-d flag and opts.debug parameter to enable source maps. Source maps tell the browser to convert line and column offsets for exceptions thrown in the bundle file back into the offsets and filenames of the original sources.</p>
+<p>The source maps include all the original file contents inline so that you can simply put the bundle file on a web server and not need to ensure that all the original source contents are accessible from the web server with paths set up correctly.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-49">
+    <section class="slide-content"><h3 id="exorcist">exorcist</h3>
+<p>The downside of inlining all the source files into the inline source map is that the bundle is twice as large. This is fine for debugging locally but not practical for shipping source maps to production. However, you can use exorcist to pull the inline source map out into a separate bundle.map.js file:</p>
+<pre><code>browserify main.js --debug | exorcist bundle.js.map &gt; bundle.js</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-50">
+    <section class="slide-content"><h3 id="auto-recompile">auto-recompile</h3>
+<p>Running a command to recompile your bundle every time can be slow and tedious. Luckily there are many tools to solve this problem. Some of these tools support live-reloading to various degrees and others have a more traditional manual refresh cycle.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-51">
+    <section class="slide-content"><h3 id="watchify">watchify</h3>
+<p>You can use <code>watchify</code> interchangeably with <code>browserify</code> but instead of writing to an output file once, watchify will write the bundle file and then watch all of the files in your dependency graph for changes. When you modify a file, the new bundle file will be written much more quickly than the first time because of aggressive caching.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-52">
+    <section class="slide-content"><p>Here is a handy configuration for using watchify and browserify with the package.json &quot;scripts&quot; field:</p>
+<pre><code>{
+  &quot;build&quot;: &quot;browserify browser.js -o static/bundle.js&quot;,
+  &quot;watch&quot;: &quot;watchify browser.js -o static/bundle.js --debug --verbose&quot;,
+}</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-53">
+    <section class="slide-content"><h3 id="wzrd">wzrd</h3>
+<p>In a similar spirit to beefy but in a more minimal form is wzrd.</p>
+<p>Just <code>npm install -g wzrd</code> then you can do:</p>
+<pre><code>wzrd app.js</code></pre>
+<p>and open up <a href="http://localhost:9966">http://localhost:9966</a> in your browser.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-54">
+    <section class="slide-content"><h1 id="transforms">transforms</h1>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-55">
+    <section class="slide-content"><p>Instead of browserify baking in support for everything, it supports a flexible transform system that are used to convert source files in-place.</p>
+<p>This way you can require() files written in coffee script or templates and everything will be compiled down to javascript.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-56">
+    <section class="slide-content"><p>To use coffeescript for example, you can use the coffeeify transform. Make sure you&#39;ve installed coffeeify first with npm install coffeeify then do:</p>
+<pre><code>browserify -t coffeeify main.coffee &gt; bundle.js</code></pre>
+<p>or with the API you can do:</p>
+<pre><code>var b = browserify(&#39;main.coffee&#39;);
+b.transform(&#39;coffeeify&#39;);</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-57">
+    <section class="slide-content"><p>The best part is, if you have source maps enabled with --debug or opts.debug, the bundle.js will map exceptions back into the original coffee script source files. This is very handy for debugging with firebug or chrome inspector.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-58">
+    <section class="slide-content"><h1 id="usage-tutorial">usage - tutorial</h1>
+<pre><code>npm install -g browserify-adventure browserify
+browserify-adventure</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-59">
+    <section class="slide-content"><h3 id="credits">Credits</h3>
+<p>All credit goes to <code>https://github.com/substack/browserify-handbook</code> and <code>substack</code></p>
+<p>This presentation is just putting the handbook in a slideshow format.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-60">
+    <section class="slide-content"><div class="author">
+  <h1 class="name">Tom Wilson</h1>
+    <h3 class="twitter">
+      <a href="http://twitter.com/@twilson63">@twilson63</a>
+    </h3>
+    <h3 class="url">
+      <a href="http://twilson63.com">http://twilson63.com</a>
+    </h3>
+</div>
+</section>
+  </div>
+
+  <div class="controls">
+    <div class="arrow prev"></div>
+    <div class="arrow next"></div>
+  </div>
+
+
+  <script type="text/javascript">
+    /**
+ * Returns the current page number of the presentation.
+ */
+function currentPosition() {
+  return parseInt(document.querySelector('.slide:not(.hidden)').id.slice(6));
+}
+
+
+/**
+ * Navigates forward n pages
+ * If n is negative, we will navigate in reverse
+ */
+function navigate(n) {
+  var position = currentPosition();
+  var numSlides = document.getElementsByClassName('slide').length;
+
+  /* Positions are 1-indexed, so we need to add and subtract 1 */
+  var nextPosition = (position - 1 + n) % numSlides + 1;
+
+  /* Normalize nextPosition in-case of a negative modulo result */
+  nextPosition = (nextPosition - 1 + numSlides) % numSlides + 1;
+
+  document.getElementById('slide-' + position).classList.add('hidden');
+  document.getElementById('slide-' + nextPosition).classList.remove('hidden');
+
+  updateProgress();
+  updateURL();
+  updateTabIndex();
+}
+
+
+/**
+ * Updates the current URL to include a hashtag of the current page number.
+ */
+function updateURL() {
+  window.history.replaceState({} , null, '#' + currentPosition());
+}
+
+
+/**
+ * Sets the progress indicator.
+ */
+function updateProgress() {
+  var progressBar = document.querySelector('.progress-bar');
+
+  if (progressBar !== null) {
+    var numSlides = document.getElementsByClassName('slide').length;
+    var position = currentPosition() - 1;
+    var percent = (numSlides === 1) ? 100 : 100 * position / (numSlides - 1);
+    progressBar.style.width = percent.toString() + '%';
+  }
+}
+
+
+/**
+ * Removes tabindex property from all links on the current slide, sets
+ * tabindex = -1 for all links on other slides. Prevents slides from appearing
+ * out of control.
+ */
+function updateTabIndex() {
+  var allLinks = document.querySelectorAll('.slide a');
+  var position = currentPosition();
+  var currentPageLinks = document.getElementById('slide-' + position).querySelectorAll('a');
+  var i;
+
+  for (i = 0; i < allLinks.length; i++) {
+    allLinks[i].setAttribute('tabindex', -1);
+  }
+
+  for (i = 0; i < currentPageLinks.length; i++) {
+    currentPageLinks[i].removeAttribute('tabindex');
+  }
+}
+
+/**
+ * Determines whether or not we are currently in full screen mode
+ */
+function isFullScreen() {
+  return document.fullscreenElement ||
+         document.mozFullScreenElement ||
+         document.webkitFullscreenElement ||
+         document.msFullscreenElement;
+}
+
+/**
+ * Toggle fullScreen mode on document element.
+ * Works on chrome (>= 15), firefox (>= 9), ie (>= 11), opera(>= 12.1), safari (>= 5).
+ */
+function toggleFullScreen() {
+  /* Convenient renames */
+  var docElem = document.documentElement;
+  var doc = document;
+
+  docElem.requestFullscreen =
+      docElem.requestFullscreen ||
+      docElem.msRequestFullscreen ||
+      docElem.mozRequestFullScreen ||
+      docElem.webkitRequestFullscreen.bind(docElem, Element.ALLOW_KEYBOARD_INPUT);
+
+  doc.exitFullscreen =
+      doc.exitFullscreen ||
+      doc.msExitFullscreen ||
+      doc.mozCancelFullScreen ||
+      doc.webkitExitFullscreen;
+
+  isFullScreen() ? doc.exitFullscreen() : docElem.requestFullscreen();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Update the tabindex to prevent weird slide transitioning
+  updateTabIndex();
+
+  // If the location hash specifies a page number, go to it.
+  var page = window.location.hash.slice(1);
+  if (page) {
+    navigate(parseInt(page) - 1);
+  }
+
+  document.onkeydown = function (e) {
+    var kc = e.keyCode;
+
+    // left, down, H, J, backspace, PgUp - BACK
+    // up, right, K, L, space, PgDn - FORWARD
+    // enter - FULLSCREEN
+    if (kc === 37 || kc === 40 || kc === 8 || kc === 72 || kc === 74 || kc === 33) {
+      navigate(-1);
+    } else if (kc === 38 || kc === 39 || kc === 32 || kc === 75 || kc === 76 || kc === 34) {
+      navigate(1);
+    } else if (kc === 13) {
+      toggleFullScreen();
+    }
+  };
+
+  if (document.querySelector('.next') && document.querySelector('.prev')) {
+    document.querySelector('.next').onclick = function (e) {
+      e.preventDefault();
+      navigate(1);
+    };
+
+    document.querySelector('.prev').onclick = function (e) {
+      e.preventDefault();
+      navigate(-1);
+    };
+  }
+});
+
+
+  </script>
+</body>
+</html>
